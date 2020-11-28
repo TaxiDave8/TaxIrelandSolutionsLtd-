@@ -1,85 +1,67 @@
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Scanner;
+import java.util.Random;
 
+/**
+ * if weve time at the end, fuck tax stuff into it's own class
+ */
 public class Property {
 
-    private String owner;
+    private String ownerName;
     private String address;
     private String postCode;
     private double marketValue;
     private int location;
-    protected boolean ppr;
-    public double annualTax;
+    private boolean ppr;
+
+    protected double taxDue;
+    protected int yearsOverDue;
+    protected double taxOverDue;
 
 
-    public void acceptInput(){
-        Scanner nFile = new Scanner(System.in);  // Create a Scanner object
+    public Property(String ownerName, String address, String postCode,
+                    double marketValue, int location, boolean ppr, int yOD) {
+        this.ownerName = ownerName;
+        this.address = address;
+        this.postCode = postCode;
+        this.marketValue = marketValue;
+        this.location = location;
+        this.ppr = ppr;
 
-        System.out.println("Enter owner's name: ");
-        owner = nFile.nextLine(); // Read user input
-
-        System.out.println("Enter address: ");
-        address = nFile.nextLine(); // Read user input
-
-        System.out.println("Enter postCode: ");
-        postCode = nFile.nextLine(); // Read user input
-
-        System.out.println("Enter MarketValue ");
-        marketValue = nFile.nextDouble(); // Read user input
-
-        System.out.println("Enter location: 1 for city, 2 for large town, 3 small town, 4 for village ");
-        location = nFile.nextInt(); // Read user input
-
-        System.out.println("Is this the owner's principle residence; enter 1 for yes and 0 for no ");
-        ppr = 1 == nFile.nextInt();
+        this.yearsOverDue = yOD;
+        this.taxDue = this.getTaxDue();
+        this.taxOverDue = this.getTaxOverDue();
     }
 
-    public void writeToFile() throws IOException {
-        File nFile = new File(owner + ".csv");
-        if (nFile.createNewFile()) {
-            System.out.println("File created: " + nFile.getName());
-        } else {
-            System.out.println("File already exists.");
-        }
-
-        FileWriter fr = new FileWriter(nFile, true);
-        fr.append(owner).append(",");
-        fr.append(address).append(",");
-        fr.append(postCode).append(",");
-        fr.append(String.valueOf(marketValue)).append(",");
-        switch (location) {
-            case 1:
-                fr.append("City,");
-                break;
-
-            case 2:
-                fr.append("Large Town,");
-                break;
-
-            case 3:
-                fr.append("Small town,");
-                break;
-
-            case 4:
-                fr.append("Village,");
-                break;
-            default:
-                return;
-        }
-
-        if (ppr) {
-            fr.append("ppr = true, \n");
-        } else fr.append("ppr = false, \n");
-        fr.flush();
-        fr.close();
+    public String getOwner() {
+        return ownerName;
     }
 
-    public double calculateAnnualTax() {
-        annualTax += 100;
+    public String getPostCode() {
+        return postCode;
+    }
 
-        if (marketValue <= 150000) {
+    public double getMarketValue() { return marketValue;
+    }
+
+    public int getLocation() {
+        return location;
+    }
+
+    public boolean getPpr() {
+        return ppr;
+    }
+
+    public double getTaxDue() {
+        double thisYearsTax = this.calcAnnualTax();
+        if( yearsOverDue != 0 ){
+            thisYearsTax = thisYearsTax * Math.pow(1.07, yearsOverDue );
+        }
+        return thisYearsTax;
+    }
+
+    public double calcAnnualTax() {
+        double annualTax = 100;
+
+        if ( marketValue <= 150000) {
             annualTax += 0;
         } else if (marketValue > 150000 && marketValue <= 400000) {
             annualTax += marketValue * .0001;
@@ -90,18 +72,43 @@ public class Property {
         }
 
         switch (location) {
-            case 1 -> annualTax += 100;
-            case 2 -> annualTax += 80;
-            case 3 -> annualTax += 60;
-            case 4 -> annualTax += 50;
-            case 5 -> annualTax += 25;
-            default -> System.out.print("Please enter number between 1-5.");
+            case 0: annualTax += 100;
+                break;
+            case 1: annualTax += 80;
+                break;
+            case 2: annualTax += 60;
+                break;
+            case 3: annualTax += 50;
+                break;
+            case 4: annualTax += 25;
+                break;
         }
 
-            if (ppr) {
-                annualTax += 100;
-            }
+        if ( ppr ) {
+            annualTax += 100;
+        }
         return annualTax;
+    }
 
+    public double getTaxOverDue(){
+        double overDue = 0;
+        if ( yearsOverDue == 0){
+            return 0;
+        } else {
+            overDue = this.calcAnnualTax() * ( 1 - Math.pow( 1.07, yearsOverDue) )/ ( 1 - 1.07 );
+        }
+        return overDue;
+    }
+
+    public double payTaxDue(){
+        taxDue = 0;
+        return taxDue;
+    }
+
+    public String toString(){
+        String s = "Address: " + address + ", Post Code: " + postCode +
+                ", Market Value: " + marketValue + ", Location: " +
+                location + ", Principal Private Residence? " + ppr  + ", Tax Due: " + taxDue +  ", Tax OverDue: " + taxOverDue;
+        return s;
     }
 }
