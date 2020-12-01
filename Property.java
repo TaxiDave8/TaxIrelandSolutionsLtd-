@@ -100,9 +100,24 @@ public class Property {
         return overDue;
     }
 
-    public double payTaxDue(){
-        taxDue = 0;
-        return taxDue;
+   public void payTaxDue(){
+        if (taxOverDue != 0){
+            System.out.println("Press 0 if you would like to just pay your overdue tax and 1 if you wish to pay all due tax.");
+            Scanner keyboard = new Scanner( System.in);
+            int choice = keyboard.nextInt();
+            switch(choice){
+                case 0: System.out.println("You have paid $" + taxOverDue + " worth of overdue tax on this property");
+                        taxOverDue = 0;
+                        break;
+                case 1: System.out.println("You have paid $" + taxOverDue + " worth of overdue tax on this property");
+                        System.out.println("You have also paid $" + taxDue + " worth of tax due on this property");
+                        taxOverDue = 0;
+                        taxDue = 0;
+            }
+        } else {
+            System.out.println("You have paid $" + taxDue + " worth of tax on this property");
+            taxDue = 0;
+        }
     }
 
     public String toString(){
